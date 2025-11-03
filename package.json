@@ -5,8 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "run": "node index.js",
-    "single": "node index.js --cleanup"
+    "run": "node scrapper.js",
+    "single": "node scrapper.js --cleanup"
   },
   "author": "",
   "license": "ISC",
