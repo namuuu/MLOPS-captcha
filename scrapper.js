@@ -1,6 +1,12 @@
 import puppeteer from "puppeteer";
 import fs from "fs";
 
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 async function main() {
     // Check for --cleanup argument
     if(IsCommandArgument("--clean")) {
@@ -17,32 +23,38 @@ async function main() {
     }
 
     const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-
-    await page.goto(`file:///E:/Workspace/MLOPS-captcha/captcha_generator.html`);
     
-    // Read every "captcha-char" element and print its text content
-    const char = await page.evaluate(() => {
-        const charElements = document.querySelectorAll('.captcha-char');
-        return Array.from(charElements).map(el => el.textContent).join('');
-    });
+    for (let i = 0; i < (GetCommandArgumentValue("--loop") || 1); i++) {
+        const page = await browser.newPage();
 
-    console.log("Captcha Text:", char);
+        await page.goto(`file:///${__dirname}/captcha_generator.html`);
+        
+        // Read every "captcha-char" element and print its text content
+        const char = await page.evaluate(() => {
+            const charElements = document.querySelectorAll('.captcha-char');
+            return Array.from(charElements).map(el => el.textContent).join('');
+        });
 
-    // Make an img folder if it doesn't exist
-    if (!fs.existsSync('img')) {
-        fs.mkdirSync('img');
+        console.log("Captcha Text:", char);
+
+        // Make an img folder if it doesn't exist
+        if (!fs.existsSync('img')) {
+            fs.mkdirSync('img');
+        }
+
+        // Take screenshot of the element with class "captcha-text"
+        const fileElement = await page.$('.captcha-text')
+
+        if(!fileElement) {
+            throw new Error("Captcha element not found");
+        }
+
+        await fileElement.screenshot({ path: `img/${char}.png` });
+        console.log(`Captcha screenshot saved as img/${char}.png`);
+
+        page.close();
     }
-
-    // Take screenshot of the element with class "captcha-text"
-    const fileElement = await page.$('.captcha-text')
-
-    if(!fileElement) {
-        throw new Error("Captcha element not found");
-    }
-
-    await fileElement.screenshot({ path: `img/${char}.png` });
-    console.log(`Captcha screenshot saved as img/${char}.png`);
+    
 
     await browser.close();
 }
@@ -52,4 +64,17 @@ export function IsCommandArgument(arg) {
     return process.argv.slice(2).some(a => a.startsWith(arg));
 }
 
+export function GetCommandArgumentValue(arg) {
+    // Find the argument that starts with the specified arg
+    const argument = process.argv.slice(2).find(a => a.startsWith(arg));
+    if (argument) {
+        const parts = argument.split("=");
+        if (parts.length === 2) {
+            return parts[1];
+        }
+    }
+    return null;
+}
+
 main();
+

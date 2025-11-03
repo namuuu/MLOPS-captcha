@@ -5,12 +5,14 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "run": "node scrapper.js",
-    "single": "node scrapper.js --cleanup"
+    "install": "npm install puppeteer && npx puppeteer browsers install chrome",
+    "simple": "node scrapper.js",
+    "single": "node scrapper.js --cleanup",
+    "loop": "node scrapper.js --loop=50"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "puppeteer": "^24.26.1"
+    "puppeteer": "^24.28.0"
   }
 }
