@@ -44,7 +44,7 @@ training_args = TrainingArguments(
     per_device_train_batch_size=4,
     num_train_epochs=5,
     logging_steps=50,
-    save_strategy="epoch",
+    save_strategy="no",
     fp16=torch.cuda.is_available(),
 )
 
