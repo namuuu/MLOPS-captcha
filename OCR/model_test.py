@@ -8,11 +8,11 @@ processor = TrOCRProcessor.from_pretrained(main_path+"/trocr-finetuned")
 model = VisionEncoderDecoderModel.from_pretrained(main_path+"/trocr-finetuned")
 
 #Modifier le nom de l'image ci-dessous...
-image = Image.open(main_path+"/img/captcha_3.png").convert("RGB")
+image = Image.open(main_path+"/img/ruvmWa.png").convert("RGB")
 pixel_values = processor(images=image, return_tensors="pt").pixel_values
-#generated_ids = model.generate(pixel_values)
-#text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
-#print("Texte prédit :", text)
+generated_ids = model.generate(pixel_values)
+text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+print("Texte prédit :", text)
 
 #boucle for pour tester les 10 premiers captchas
 ###
