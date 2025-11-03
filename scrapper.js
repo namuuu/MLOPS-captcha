@@ -9,6 +9,7 @@ const __dirname = dirname(__filename);
 
 const dataset = [];
 const datasetFile = 'dataset.json';
+let previousPercentage = 0;
 
 async function main() {
     // Load existing dataset if available
@@ -50,8 +51,6 @@ async function main() {
             return Array.from(charElements).map(el => el.textContent).join('');
         });
 
-        console.log("Captcha Text:", char);
-
         // Make an img folder if it doesn't exist
         if (!fs.existsSync('img')) {
             fs.mkdirSync('img');
@@ -65,7 +64,8 @@ async function main() {
         }
 
         await fileElement.screenshot({ path: `img/${char}.png` });
-        console.log(`Captcha screenshot saved as img/${char}.png`);
+
+        PrintPercentageBar(i, GetCommandArgumentValue("--loop") || 1);
         dataset.push({ captcha: char, image: `/img/${char}.png` });
 
         page.close();
@@ -73,9 +73,25 @@ async function main() {
     
     // Save dataset to file
     fs.writeFileSync(datasetFile, JSON.stringify(dataset, null, 2));
-    console.log("Dataset saved: ", dataset.length, " entries.");
+    console.log("\nDataset saved: ", dataset.length, " entries.");
 
-    await browser.close();
+    process.exit(0);
+}
+
+export function PrintPercentageBar(i, max) {
+    const percentage = ((i + 1) / max) * 100;
+
+    if (percentage - previousPercentage < 0.5 && percentage < 100) {
+        return;
+    }
+
+    previousPercentage = percentage;
+
+    const barLength = 20;
+    const filledLength = Math.round((percentage / 100) * barLength);
+    const bar = '█'.repeat(filledLength) + '-'.repeat(barLength - filledLength);
+    process.stdout.write(`\rProgress: |${bar}| ${percentage.toFixed(2)}%`);
+
 }
 
 export function IsCommandArgument(arg) {
