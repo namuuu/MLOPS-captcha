@@ -38,10 +38,21 @@ async function main() {
         }
     }
 
+    let dirname = __dirname;
+    if(__dirname.startsWith("/mnt/")) {
+        // Convert WSL path to Windows path
+        dirname = __dirname.replace("/mnt/", "")
+
+        const driveLetter = dirname.charAt(0);
+        dirname = driveLetter.toUpperCase() + ":" + dirname.slice(1);
+    }
+
     const browser = await puppeteer.launch();
     
     for (let i = 0; i < (GetCommandArgumentValue("--loop") || 1); i++) {
         const page = await browser.newPage();
+
+
 
         await page.goto(`file:///${__dirname}/captcha_generator.html`);
         
