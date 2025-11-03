@@ -7,7 +7,22 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+const dataset = [];
+const datasetFile = 'dataset.json';
+
 async function main() {
+    // Load existing dataset if available
+    if (fs.existsSync(datasetFile)) {
+        if (IsCommandArgument("--restart-dataset")) {
+            fs.unlinkSync(datasetFile);
+            console.log("Dataset restart: dataset.json deleted.");
+        } else {
+            const data = fs.readFileSync(datasetFile);
+            Object.assign(dataset, JSON.parse(data));
+            console.log("Dataset loaded: ", dataset.length, " entries.");
+        }
+    }   
+
     // Check for --cleanup argument
     if(IsCommandArgument("--clean")) {
         // Delete all files in the img folder
@@ -51,10 +66,14 @@ async function main() {
 
         await fileElement.screenshot({ path: `img/${char}.png` });
         console.log(`Captcha screenshot saved as img/${char}.png`);
+        dataset.push({ captcha: char, image: `/img/${char}.png` });
 
         page.close();
     }
     
+    // Save dataset to file
+    fs.writeFileSync(datasetFile, JSON.stringify(dataset, null, 2));
+    console.log("Dataset saved: ", dataset.length, " entries.");
 
     await browser.close();
 }
