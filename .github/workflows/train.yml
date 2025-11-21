@@ -36,9 +36,13 @@ jobs:
         pip install torch
         pip install datasets
 
-    - name: Run training loop
+    - name: Run puppeteer
       run: |
         npm run loop
+        ls -la ./images/
+        cat ./dataset.json
+      
+    - name: Train OCR model
         python3 ./OCR/train.py
 
 # Le make file ressemble à
