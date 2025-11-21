@@ -33,6 +33,7 @@ jobs:
       run: |
         pip install pillow
         pip install transformers
+        pip install transformers[torch]
         pip install torch
         pip install datasets
 
