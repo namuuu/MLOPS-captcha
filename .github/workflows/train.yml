@@ -66,23 +66,12 @@ jobs:
       if: ${{ steps.check_model.outputs.model_uploaded == 'false' }}
       run: python3 ./OCR/train.py
 
+    - name: Test OCR model
+      run: python3 ./OCR/model_test_write.py
+      
     - name: Upload trained model
       if: ${{ steps.check_model.outputs.model_uploaded == 'false' }}
       uses: actions/upload-artifact@v4
       with:
         name: trocr-model
         path: trocr-finetuned/  # dossier contenant ton modèle
-
-# Le make file ressemble à
-#all: install run
-
-#install:
-#	npm run install
-#	pip install pillow
-#	pip install transformers
-#	pip install torch
-#	pip install datasets
-#
-#run:
-#	npm run loop
-#	python3 ./OCR/train.py
