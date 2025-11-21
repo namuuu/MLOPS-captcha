@@ -56,7 +56,7 @@ jobs:
 
       # Télécharger l'artefact s'il existe
     - name: Download artifact
-      if: ${{ steps.check_artifact.outputs.artifact_exists == 'true' }}
+      if: ${{ steps.check_artifact.outputs.model_uploaded == 'true' }}
       uses: actions/download-artifact@v4
       with:
         name: trocr-model
