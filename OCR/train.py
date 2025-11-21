@@ -2,32 +2,36 @@ from transformers import TrOCRProcessor, VisionEncoderDecoderModel, Trainer, Tra
 from datasets import load_dataset
 from PIL import Image
 import torch
+from pathlib import Path
 
-#Chargement du modèle et le processor
-model_name = "microsoft/trocr-base-printed" # car les lettres écrites sont écrite à l'ordinateur (police)
+# Chargement du modèle et du processor
+model_name = "microsoft/trocr-base-printed"
 processor = TrOCRProcessor.from_pretrained(model_name)
 model = VisionEncoderDecoderModel.from_pretrained(model_name)
 
-# chemins
-path_dataset = __file__.replace("train.py", "dataset.json").replace("OCR\\", "")
-main_path = __file__.replace("train.py", "").replace("OCR\\", "")
+# Gestion robuste des chemins
+current_file = Path(__file__).resolve()
+main_path = current_file.parent.parent  # si ton script est dans un sous-dossier "OCR"
+path_dataset = main_path / "dataset.json"
 
-# Chargement du dataset (fichier JSON du type [{image:"path", captcha:"text"}])
-dataset = load_dataset("json", data_files={"train": path_dataset})["train"]
+# Chargement du dataset JSON
+dataset = load_dataset("json", data_files={"train": str(path_dataset)})["train"]
 
-# pré-traitement 
+# Prétraitement des exemples
 def preprocess(example):
-    image = Image.open(main_path + example["image"]).convert("RGB")
-    # -> pixel_values: Tensor shape [3, H, W]
+    image_rel_path = example["image"].lstrip("/\\")  # supprime / ou \ en début
+    image_path = (main_path / image_rel_path).resolve()
+    image = Image.open(image_path).convert("RGB")
     pixel_values = processor(images=image, return_tensors="pt").pixel_values.squeeze()
-    # -> labels: Tensor shape [seq_len]
-    labels = processor.tokenizer(example["captcha"], return_tensors="pt", padding="max_length", max_length=64, truncation=True).input_ids.squeeze()
-    return {
-        "pixel_values": pixel_values,
-        "labels": labels
-    }
+    labels = processor.tokenizer(
+        example["captcha"],
+        return_tensors="pt",
+        padding="max_length",
+        max_length=64,
+        truncation=True
+    ).input_ids.squeeze()
+    return {"pixel_values": pixel_values, "labels": labels}
 
-# map + type forcé
 dataset = dataset.map(preprocess, remove_columns=dataset.column_names)
 dataset.set_format(type="torch", columns=["pixel_values", "labels"])
 
@@ -38,12 +42,12 @@ model.config.eos_token_id = processor.tokenizer.eos_token_id
 model.config.max_length = 64
 model.config.vocab_size = model.config.decoder.vocab_size
 
-# Entraînement
+# Arguments d'entraînement
 training_args = TrainingArguments(
-    output_dir="./trocr-finetuned",
+    output_dir=str(main_path / "trocr-finetuned"),
     per_device_train_batch_size=4,
-    num_train_epochs=5,
-    logging_steps=50,
+    num_train_epochs=2,
+    logging_steps=10,
     save_strategy="no",
     fp16=torch.cuda.is_available(),
 )
@@ -56,6 +60,7 @@ trainer = Trainer(
 
 trainer.train()
 
-# Sauvegarde du modèle
-model.save_pretrained(main_path+"/trocr-finetuned")
-processor.save_pretrained(main_path+"/trocr-finetuned")
+# Sauvegarde finale du modèle et du processor
+save_dir = main_path / "trocr-finetuned"
+model.save_pretrained(save_dir)
+processor.save_pretrained(save_dir)
