@@ -45,6 +45,7 @@ model.config.max_length = 64
 model.config.vocab_size = model.config.decoder.vocab_size
 
 # Arguments d'entraînement
+# Faire que l'output dir soit le dossier output dans main_path
 training_args = TrainingArguments(
     output_dir=str(main_path / "trocr-finetuned"),
     per_device_train_batch_size=4,
@@ -62,7 +63,7 @@ trainer = Trainer(
 
 trainer.train()
 
-# Sauvegarde finale du modèle et du processor
-save_dir = main_path / "trocr-finetuned"
-model.save_pretrained(save_dir)
-processor.save_pretrained(save_dir)
+# Sauvegarde finale du modèle et du processor dans le dossier nommé output
+save_path = main_path / "trocr-finetuned"
+model.save_pretrained(save_path)   
+processor.save_pretrained(save_path)

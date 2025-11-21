@@ -45,14 +45,22 @@ jobs:
         ls -la ./img/
         cat ./dataset.json
 
-          - name: Check if model exists
-        id: check_model
-        run: |
-          if [ -d "output/" ] && [ "$(ls -A output/)" ]; then
-            echo "model_uploaded=true" >> $GITHUB_OUTPUT
-          else
-            echo "model_uploaded=false" >> $GITHUB_OUTPUT
-          fi
+    - name: Check if model exists
+      id: check_model
+      run: |
+        if [ -d "trocr-finetuned/" ] && [ "$(ls -A trocr-finetuned/)" ]; then
+          echo "model_uploaded=true" >> $GITHUB_OUTPUT
+        else
+          echo "model_uploaded=false" >> $GITHUB_OUTPUT
+        fi
+
+      # Télécharger l'artefact s'il existe
+    - name: Download artifact
+      if: ${{ steps.check_artifact.outputs.artifact_exists == 'true' }}
+      uses: actions/download-artifact@v4
+      with:
+        name: trocr-model
+        path: trocr-finetuned/
       
     - name: Train OCR model
       if: ${{ steps.check_model.outputs.model_uploaded == 'false' }}
@@ -60,9 +68,10 @@ jobs:
 
     - name: Test OCR model
       run: python3 ./OCR/model_test_write.py
+      
     - name: Upload trained model
       if: ${{ steps.check_model.outputs.model_uploaded == 'false' }}
       uses: actions/upload-artifact@v4
       with:
         name: trocr-model
-        path: output/  # dossier contenant ton modèle
+        path: trocr-finetuned/  # dossier contenant ton modèle
