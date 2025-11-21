@@ -45,14 +45,14 @@ jobs:
         ls -la ./img/
         cat ./dataset.json
 
-          - name: Check if model exists
-        id: check_model
-        run: |
-          if [ -d "output/" ] && [ "$(ls -A output/)" ]; then
-            echo "model_uploaded=true" >> $GITHUB_OUTPUT
-          else
-            echo "model_uploaded=false" >> $GITHUB_OUTPUT
-          fi
+    - name: Check if model exists
+      id: check_model
+      run: |
+        if [ -d "output/" ] && [ "$(ls -A output/)" ]; then
+          echo "model_uploaded=true" >> $GITHUB_OUTPUT
+        else
+          echo "model_uploaded=false" >> $GITHUB_OUTPUT
+        fi
       
     - name: Train OCR model
       if: ${{ steps.check_model.outputs.model_uploaded == 'false' }}
