@@ -46,16 +46,5 @@ jobs:
     - name: Train OCR model
       run: python3 ./OCR/train.py
 
-# Le make file ressemble à
-#all: install run
-
-#install:
-#	npm run install
-#	pip install pillow
-#	pip install transformers
-#	pip install torch
-#	pip install datasets
-#
-#run:
-#	npm run loop
-#	python3 ./OCR/train.py
+    - name: Test OCR model
+      run: python3 ./OCR/model_test_write.py
