@@ -60,7 +60,7 @@ jobs:
 
     - name: Upload trained model
       if: ${{ steps.check_model.outputs.model_uploaded == 'false' }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: trocr-model
         path: output/  # dossier contenant ton modèle
