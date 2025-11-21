@@ -47,7 +47,10 @@ async function main() {
         dirname = driveLetter.toUpperCase() + ":" + dirname.slice(1);
     }
 
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
     
     for (let i = 0; i < (GetCommandArgumentValue("--loop") || 1); i++) {
         const page = await browser.newPage();

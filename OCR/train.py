@@ -32,6 +32,8 @@ def preprocess(example):
     ).input_ids.squeeze()
     return {"pixel_values": pixel_values, "labels": labels}
 
+
+
 dataset = dataset.map(preprocess, remove_columns=dataset.column_names)
 dataset.set_format(type="torch", columns=["pixel_values", "labels"])
 

@@ -24,6 +24,11 @@ jobs:
       with:
         python-version: '3.8'
 
+    - name: Make npm run install
+      run: | 
+        npm install puppeteer
+        npx puppeteer browsers install chrome
+
     - name: Install Python dependencies
       run: |
         pip install pillow
@@ -33,6 +38,7 @@ jobs:
 
     - name: Run training loop
       run: |
+        npm run loop
         python3 ./OCR/train.py
 
 # Le make file ressemble à
