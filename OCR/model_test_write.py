@@ -2,7 +2,7 @@ import os
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 from PIL import Image
 
-main_path = __file__.replace("model_test_write.py", "").replace("OCR\\", "")
+main_path = "./"
 print("main_path :", main_path)
 
 processor = TrOCRProcessor.from_pretrained(main_path+"/trocr-finetuned")
