@@ -39,7 +39,7 @@ jobs:
     - name: Run puppeteer
       run: |
         npm run loop
-        ls -la ./images/
+        ls -la ./img/
         cat ./dataset.json
       
     - name: Train OCR model
