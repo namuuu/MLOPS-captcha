@@ -77,3 +77,13 @@ jobs:
       with:
         name: trocr-model
         path: trocr-finetuned/  # dossier contenant ton modèle
+
+    - name: Commit JSON
+      run: |
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+        git add dataset_result.json
+        git diff --cached --quiet || git commit -m "Update dataset_result.json from workflow [skip ci]"
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
