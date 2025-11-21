@@ -9,6 +9,8 @@ on:
 jobs:
   train_model:
     runs-on: ubuntu-latest
+    outputs:
+      model_uploaded: ${{ steps.check_model.outputs.model_uploaded }}
 
     steps:
     - name: Checkout repository
@@ -42,9 +44,25 @@ jobs:
         node scrapper.js --loop=50 --cleanup --restart-dataset
         ls -la ./img/
         cat ./dataset.json
+
+          - name: Check if model exists
+        id: check_model
+        run: |
+          if [ -d "output/" ] && [ "$(ls -A output/)" ]; then
+            echo "model_uploaded=true" >> $GITHUB_OUTPUT
+          else
+            echo "model_uploaded=false" >> $GITHUB_OUTPUT
+          fi
       
     - name: Train OCR model
+      if: ${{ steps.check_model.outputs.model_uploaded == 'false' }}
       run: python3 ./OCR/train.py
 
     - name: Test OCR model
       run: python3 ./OCR/model_test_write.py
+    - name: Upload trained model
+      if: ${{ steps.check_model.outputs.model_uploaded == 'false' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: trocr-model
+        path: output/  # dossier contenant ton modèle
