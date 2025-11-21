@@ -24,9 +24,20 @@ jobs:
       with:
         python-version: '3.8'
 
-    - name: Install dependencies and run training
+    - name: Make npm run install
+      run: npm run install
+
+    - name: Install Python dependencies
       run: |
-        make all
+        pip install pillow
+        pip install transformers
+        pip install torch
+        pip install datasets
+
+    - name: Run training loop
+      run: |
+        npm run loop
+        python3 ./OCR/train.py
 
 # Le make file ressemble à
 #all: install run
