@@ -85,5 +85,5 @@ jobs:
         git add dataset_result.json
         git diff --cached --quiet || git commit -m "Update dataset_result.json from workflow [skip ci]"
           git push origin main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
