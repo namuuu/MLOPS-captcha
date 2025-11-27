@@ -104,6 +104,8 @@
   let historyList = [];
   let currentImage = null;
   let currentPrediction = null;
+  let dataset = [];
+  let currentIndex = 0;
 
   const el = {
     loading: document.getElementById("captcha-loading"),
@@ -127,20 +129,21 @@
     el.feedbackSuccess.classList.add("hidden");
     el.correctAnswer.value = "";
 
-    try {
-      // Replace this with your real API
-      const res = await fetch("VOTRE_API_ENDPOINT");
-      const data = await res.json();
-
-      currentImage = data.imageUrl || data.image || data.image_url;
-      currentPrediction = data.prediction || data.result || data.text;
-
-    } catch (e) {
-      console.warn("Simulation mode");
-
-      currentImage = "https://via.placeholder.com/300x100/4F46E5/FFFFFF?text=ABC123";
-      currentPrediction = "ABC123";
+    if (dataset.length === 0) {
+        const res = await fetch("./dataset_result.json");
+        dataset = await res.json();
+        currentIndex = 0;
     }
+
+    if (currentIndex >= dataset.length) {
+        currentIndex = 0;
+    }
+
+    const item = dataset[currentIndex];
+    currentIndex++;
+
+    currentImage = item.image;
+    currentPrediction = item.text;
 
     el.img.src = currentImage;
     el.prediction.textContent = currentPrediction;
