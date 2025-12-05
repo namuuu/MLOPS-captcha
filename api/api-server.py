@@ -2,9 +2,16 @@ from fastapi import FastAPI, File, UploadFile
 from PIL import Image
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 import io
+from fastapi.middleware.cors import CORSMiddleware 
 
 app = FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8080"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 def mon_script_traitement(image_bytes):
     """
     C'est ici que vous placez votre logique de script Python.
