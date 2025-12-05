@@ -47,22 +47,22 @@ jobs:
         ls -la ./img/
         cat ./dataset.json
 
-    - name: Check if model exists
-      id: check_model
-      run: |
-        if [ -d "trocr-finetuned/" ] && [ "$(ls -A trocr-finetuned/)" ]; then
-          echo "model_uploaded=true" >> $GITHUB_OUTPUT
-        else
-          echo "model_uploaded=false" >> $GITHUB_OUTPUT
-        fi
-
       # Télécharger l'artefact s'il existe
-    - name: Download artifact
-      if: ${{ steps.check_artifact.outputs.model_uploaded == 'true' }}
+    - name: Download artifact (if exists)
       uses: actions/download-artifact@v4
       with:
         name: trocr-model
         path: trocr-finetuned/
+      continue-on-error: true
+
+    - name: Check if model exists (set output)
+      id: check_model
+      run: |
+        if [ -d "trocr-finetuned/" ] && [ "$(ls -A trocr-finetuned/ 2>/dev/null)" ]; then
+          echo "model_uploaded=true" >> $GITHUB_OUTPUT
+        else
+          echo "model_uploaded=false" >> $GITHUB_OUTPUT
+        fi
       
     - name: Train OCR model
       if: ${{ steps.check_model.outputs.model_uploaded == 'false' }}
@@ -86,7 +86,7 @@ jobs:
         git add -f ./img/
         git diff --cached --quiet || git commit -m "Update dataset_result.json and images from workflow [skip ci]"
           git push origin main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
