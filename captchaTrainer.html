@@ -104,6 +104,8 @@
   let historyList = [];
   let currentImage = null;
   let currentPrediction = null;
+  let dataset = [];
+  let currentIndex = 0;
 
   const el = {
     loading: document.getElementById("captcha-loading"),
@@ -114,7 +116,6 @@
     feedbackInput: document.getElementById("feedback-input"),
     correctAnswer: document.getElementById("correct-answer"),
     feedbackSuccess: document.getElementById("feedback-success"),
-    history: document.getElementById("history"),
     statCorrect: document.getElementById("stat-correct"),
     statIncorrect: document.getElementById("stat-incorrect"),
     statAccuracy: document.getElementById("stat-accuracy"),
@@ -127,20 +128,19 @@
     el.feedbackSuccess.classList.add("hidden");
     el.correctAnswer.value = "";
 
-    try {
-      // Replace this with your real API
-      const res = await fetch("VOTRE_API_ENDPOINT");
-      const data = await res.json();
-
-      currentImage = data.imageUrl || data.image || data.image_url;
-      currentPrediction = data.prediction || data.result || data.text;
-
-    } catch (e) {
-      console.warn("Simulation mode");
-
-      currentImage = "https://via.placeholder.com/300x100/4F46E5/FFFFFF?text=ABC123";
-      currentPrediction = "ABC123";
+    if (dataset.length === 0) {
+        const res = await fetch("./dataset_result.json");
+        dataset = await res.json();
+        currentIndex = 0;
     }
+
+    if (currentIndex >= dataset.length) currentIndex = 0;
+
+    const item = dataset[currentIndex];
+    currentIndex++;
+
+    currentImage = item.image;
+    currentPrediction = item.text;
 
     el.img.src = currentImage;
     el.prediction.textContent = currentPrediction;
@@ -151,96 +151,54 @@
   }
 
   function updateStats() {
+    const acc = stats.total ? ((stats.correct / stats.total) * 100).toFixed(1) : 0;
     el.statCorrect.textContent = stats.correct;
     el.statIncorrect.textContent = stats.incorrect;
-
-    const acc = stats.total ? ((stats.correct / stats.total) * 100).toFixed(1) : 0;
     el.statAccuracy.textContent = acc + "%";
   }
 
-  function addHistory(isCorrect, answer) {
-    historyList.unshift({
-      prediction: currentPrediction,
-      correct: answer,
-      isCorrect,
-      timestamp: new Date().toLocaleTimeString()
-    });
+  // --- ACTIONS ---
 
-    historyList = historyList.slice(0, 10);
-
-    renderHistory();
-  }
-
-  function renderHistory() {
-    if (historyList.length === 0) {
-      el.history.innerHTML = `<p class="text-gray-400 text-center py-8">Aucune prédiction encore</p>`;
-      return;
-    }
-
-    el.history.innerHTML = historyList
-      .map(item => `
-        <div class="p-4 rounded-lg border-2 ${item.isCorrect ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"}">
-          <div class="flex justify-between mb-2">
-            <span class="font-semibold ${item.isCorrect ? "text-green-700" : "text-red-700"}">
-              ${item.isCorrect ? "✓ Correct" : "✗ Incorrect"}
-            </span>
-            <span class="text-xs text-gray-500">${item.timestamp}</span>
-          </div>
-
-          <div class="text-sm text-gray-600">
-            Prédiction: <span class="font-mono font-semibold">${item.prediction}</span>
-          </div>
-
-          ${!item.isCorrect
-            ? `<div class="text-sm text-gray-600">Correct: <span class="font-mono font-semibold">${item.correct}</span></div>`
-            : ""
-          }
-        </div>
-      `)
-      .join("");
-  }
-
-  // --- BUTTON ACTIONS ---
-
-  document.getElementById("btn-new").onclick = fetchNewCaptcha;
-
+  // 🎯 Si c’est correct → passer à l’image suivante automatiquement
   document.getElementById("btn-correct").onclick = () => {
     stats.correct++;
     stats.total++;
-
     updateStats();
-    addHistory(true, currentPrediction);
 
     el.feedbackButtons.classList.add("hidden");
     el.feedbackSuccess.classList.remove("hidden");
 
-    setTimeout(fetchNewCaptcha, 1000);
+    setTimeout(fetchNewCaptcha, 600);
   };
 
+  // 🎯 Si incorrect → afficher le champ de saisie
   document.getElementById("btn-incorrect").onclick = () => {
     el.feedbackButtons.classList.add("hidden");
     el.feedbackInput.classList.remove("hidden");
   };
 
+  // 🎯 Une fois la bonne réponse saisie → passer au suivant
   document.getElementById("btn-submit-correction").onclick = () => {
     const correct = el.correctAnswer.value.trim();
     if (!correct) return;
 
     stats.incorrect++;
     stats.total++;
-
     updateStats();
-    addHistory(false, correct);
 
     el.feedbackInput.classList.add("hidden");
     el.feedbackSuccess.classList.remove("hidden");
 
-    setTimeout(fetchNewCaptcha, 1000);
+    setTimeout(fetchNewCaptcha, 600);
   };
 
-  // FIRST LOAD
+  // Bouton "Nouveau"
+  document.getElementById("btn-new").onclick = fetchNewCaptcha;
+
+  // Premier CAPTCHA
   fetchNewCaptcha();
 </script>
+
 
 </body>
 </html>
