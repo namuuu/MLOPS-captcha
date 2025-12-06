@@ -1,22 +1,21 @@
-from fastapi import FastAPI, File, UploadFile
-from PIL import Image
+import os
+from fastapi import FastAPI, File, UploadFile # type: ignore
+from PIL import Image # type: ignore
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 import io
-from fastapi.middleware.cors import CORSMiddleware 
+from fastapi.middleware.cors import CORSMiddleware  # type: ignore
+import numpy as np # type: ignore
 
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080"],
+    #allow_origins=["http://localhost:8080"],
+    allow_origins=["*"], # Pas sécurisé, à utiliser uniquement en développement
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 def mon_script_traitement(image_bytes):
-    """
-    C'est ici que vous placez votre logique de script Python.
-    Exemple: Ouvrir l'image et récupérer ses dimensions.
-    """
     image = Image.open(io.BytesIO(image_bytes))
     # Exemple de traitement : on récupère la taille et le format
     # Vous pourrirez ici faire de l'OCR, du ML, du redimensionnement, etc.
@@ -31,16 +30,19 @@ def mon_script_traitement(image_bytes):
     }
 
 def monOcr(image_bytes):
-    image = Image.open(io.BytesIO(image_bytes))
+    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    print(f"DEBUG - Mode original de l'image : {image.mode}")
+    # ouvrir l'image dans un terminal pour debug
+    #image.show()
+    image_array = np.array(image)
+    print(f"DEBUG - Mode converti de l'image : {image.mode}")
     main_path = __file__.replace("api\\", "").replace("api-server.py", "")
-
     processor = TrOCRProcessor.from_pretrained(main_path+"/trocr-finetuned")
     model = VisionEncoderDecoderModel.from_pretrained(main_path+"/trocr-finetuned")
-
-    pixel_values = processor(images=image, return_tensors="pt").pixel_values
+    pixel_values = processor(images=image_array, return_tensors="pt").pixel_values
     generated_ids = model.generate(pixel_values)
     text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
-
+    print(f"DEBUG - Texte prédit : {text}")
     return{
         "Text_predit": text
     }

@@ -138,7 +138,7 @@
             <div class="flex flex-col space-y-4">
                 <div>
                     <label for="captchaInput" class="block text-sm font-medium text-gray-700 mb-1">Enter the text above</label>
-                    <input type="text" id="captchaInput" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" placeholder="Type the captcha here">
+                    <input type="text" id="captchaInput" disabled class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" placeholder="AI Response...">
                 </div>
 
                 <div class="flex justify-between">
@@ -156,29 +156,6 @@
             <div id="resultMessage" class="mt-6 hidden p-4 rounded-md"></div>
         </div>
 
-        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-white p-6 rounded-xl shadow-md">
-                <div class="text-primary-500 mb-4">
-                    <i data-feather="shield" class="w-8 h-8"></i>
-                </div>
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Secure</h3>
-                <p class="text-gray-600">Our captchas are designed to be hard for bots but easy for humans.</p>
-            </div>
-            <div class="bg-white p-6 rounded-xl shadow-md">
-                <div class="text-secondary-500 mb-4">
-                    <i data-feather="refresh-cw" class="w-8 h-8"></i>
-                </div>
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Dynamic</h3>
-                <p class="text-gray-600">Each captcha is unique and regenerated with a simple refresh.</p>
-            </div>
-            <div class="bg-white p-6 rounded-xl shadow-md">
-                <div class="text-primary-500 mb-4">
-                    <i data-feather="code" class="w-8 h-8"></i>
-                </div>
-                <h3 class="text-xl font-bold text-gray-800 mb-2">API Ready</h3>
-                <p class="text-gray-600">Easily integrate our captcha system into your applications.</p>
-            </div>
-        </div>
     </main>
 
     <footer class="bg-gray-800 text-white py-8">
@@ -201,10 +178,9 @@
 
     <script>
     function capture() {
-    html2canvas(document.querySelector("#captchaDisplay")).then(async (canvas) => {
-
+    html2canvas(document.querySelector(".captcha-container")).then(async (canvas) => {
+        document.querySelector("#captchaInput").value = "Waiting for OCR Response...";
         const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
-
         const filename = "captcha_" + Date.now() + ".png";
 
         const formData = new FormData();
@@ -220,7 +196,7 @@
 
             const data = await res.json();
             console.log("✅ OCR RESULT:", data);
-            alert("Texte détecté : " + data);
+            document.querySelector("#captchaInput").value = data.Text_predit;
 
         } catch (err) {
             console.error("❌ OCR ERROR:", err);
@@ -365,23 +341,6 @@
             document.getElementById('resultMessage').classList.add('hidden');
             document.getElementById('captchaInput').value = '';
         }
-
-        // // Check captcha
-        // function checkCaptcha() {
-        //     const userInput = document.getElementById('captchaInput').value;
-        //     const resultMessage = document.getElementById('resultMessage');
-
-        //     resultMessage.classList.remove('hidden');
-
-        //     // exact match (case-sensitive) - you can change to toLowerCase() for case-insensitive
-        //     if (userInput === currentCaptcha) {
-        //         resultMessage.textContent = '✓ Captcha verified successfully!';
-        //         resultMessage.className = 'mt-6 p-4 rounded-md bg-green-100 text-green-800';
-        //     } else {
-        //         resultMessage.textContent = '✗ Incorrect captcha. Please try again.';
-        //         resultMessage.className = 'mt-6 p-4 rounded-md bg-red-100 text-red-800';
-        //     }
-        // }
 
         // Event listeners
         document.addEventListener('DOMContentLoaded', () => {
