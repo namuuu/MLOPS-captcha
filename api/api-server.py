@@ -61,11 +61,9 @@ async def create_upload_file(file: UploadFile = File(...)):
 
 @app.post("/analyser-ocr/")
 async def create_upload_file(file: UploadFile = File(...)):
-    # 1. Lire le contenu du fichier uploadé
+
     contents = await file.read()
     
-    # 2. Exécuter votre script python sur ce contenu
     resultat = monOcr(contents)
-    
-    # 3. Renvoyer le résultat en JSON
+
     return resultat

@@ -43,7 +43,7 @@ jobs:
 
     - name: Run puppeteer
       run: |
-        node scrapper.js --loop=1000 --cleanup --restart-dataset
+        node scrapper.js --loop=500 --cleanup --restart-dataset
         ls -la ./img/
         cat ./dataset.json
 

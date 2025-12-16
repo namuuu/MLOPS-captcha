@@ -1,4 +1,5 @@
-from transformers import TrOCRProcessor, VisionEncoderDecoderModel, Trainer, TrainingArguments
+from transformers import TrOCRProcessor, VisionEncoderDecoderModel, Trainer
+from transformers import TrainingArguments
 from datasets import load_dataset
 from PIL import Image
 import torch
@@ -11,13 +12,13 @@ model = VisionEncoderDecoderModel.from_pretrained(model_name)
 
 # Gestion robuste des chemins
 current_file = Path(__file__).resolve()
-main_path = current_file.parent.parent  # si ton script est dans un sous-dossier "OCR"
+main_path = current_file.parent.parent 
 path_dataset = main_path / "dataset.json"
 
 # Chargement du dataset JSON
 dataset = load_dataset("json", data_files={"train": str(path_dataset)})["train"]
 
-# Prétraitement des exemples
+# Prétraitement
 def preprocess(example):
     image_rel_path = example["image"].lstrip("/\\")  # supprime / ou \ en début
     image_path = (main_path / image_rel_path).resolve()
@@ -48,11 +49,10 @@ model.config.vocab_size = model.config.decoder.vocab_size
 training_args = TrainingArguments(
     output_dir=str(main_path / "trocr-finetuned"),
     per_device_train_batch_size=8,      
-    num_train_epochs=5,
+    num_train_epochs=3,
     learning_rate=4e-5,                
     logging_steps=50,
-    save_strategy="epoch",
-    save_total_limit=2,             
+    save_strategy="no",             
     fp16=torch.cuda.is_available(),
 )
 
