@@ -45,13 +45,14 @@ model.config.max_length = 64
 model.config.vocab_size = model.config.decoder.vocab_size
 
 # Arguments d'entraînement
-# Faire que l'output dir soit le dossier output dans main_path
 training_args = TrainingArguments(
     output_dir=str(main_path / "trocr-finetuned"),
-    per_device_train_batch_size=4,
-    num_train_epochs=2,
-    logging_steps=10,
-    save_strategy="no",
+    per_device_train_batch_size=8,      
+    num_train_epochs=5,
+    learning_rate=4e-5,                
+    logging_steps=50,
+    load_best_model_at_end=True,
+    save_strategy="epoch",             
     fp16=torch.cuda.is_available(),
 )
 
