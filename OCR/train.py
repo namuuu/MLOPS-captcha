@@ -38,6 +38,11 @@ def preprocess(example):
 dataset = dataset.map(preprocess, remove_columns=dataset.column_names)
 dataset.set_format(type="torch", columns=["pixel_values", "labels"])
 
+#Division du dataset en train et validation
+dataset_split = dataset.train_test_split(test_size=0.1)
+train_dataset = dataset_split["train"]
+eval_dataset = dataset_split["test"]
+
 # Config du modèle
 model.config.decoder_start_token_id = processor.tokenizer.cls_token_id
 model.config.pad_token_id = processor.tokenizer.pad_token_id
@@ -52,14 +57,17 @@ training_args = TrainingArguments(
     num_train_epochs=3,
     learning_rate=4e-5,                
     logging_steps=50,
-    save_strategy="no",             
+    save_strategy="no",
+    eval_strategy="steps",
+    eval_steps=50,          
     fp16=torch.cuda.is_available(),
 )
 
 trainer = Trainer(
     model=model,
     args=training_args,
-    train_dataset=dataset,
+    train_dataset=train_dataset,
+    eval_dataset=eval_dataset
 )
 
 trainer.train()
